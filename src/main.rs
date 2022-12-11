@@ -15,7 +15,7 @@ fn main() {
     day5b();
 }
 
-fn day1a() {
+fn day1_process_data() -> Vec<Vec<i64>> {
     const INPUT: &str = include_str!("../input/day1.txt");
     let elf_calories = INPUT
         .split("\n\n")
@@ -27,6 +27,11 @@ fn day1a() {
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
+    elf_calories
+}
+
+fn day1a() {
+    let elf_calories = day1_process_data();
 
     let max_cals = elf_calories
         .iter()
@@ -37,17 +42,7 @@ fn day1a() {
 }
 
 fn day1b() {
-    const INPUT: &str = include_str!("../input/day1.txt");
-    let elf_calories = INPUT
-        .split("\n\n")
-        .map(|block| {
-            block
-                .trim()
-                .split("\n")
-                .map(|s| s.parse::<i64>().unwrap())
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
+    let elf_calories = day1_process_data();
 
     let mut cals = elf_calories
         .iter()
@@ -61,13 +56,17 @@ fn day1b() {
     println!("{}", result);
 }
 
-fn day2a() {
+fn day2_process_data() -> Vec<(char, char)> {
     const INPUT: &str = include_str!("../input/day2.txt");
-
     let rounds = INPUT
         .split("\n")
         .map(|row| (row.chars().nth(0).unwrap(), row.chars().nth(2).unwrap()))
         .collect::<Vec<_>>();
+    rounds
+}
+
+fn day2a() {
+    let rounds = day2_process_data();
 
     let result = rounds
         .iter()
@@ -90,12 +89,7 @@ fn day2a() {
 }
 
 fn day2b() {
-    const INPUT: &str = include_str!("../input/day2.txt");
-
-    let rounds = INPUT
-        .split("\n")
-        .map(|row| (row.chars().nth(0).unwrap(), row.chars().nth(2).unwrap()))
-        .collect::<Vec<_>>();
+    let rounds = day2_process_data();
 
     let result = rounds
         .iter()
@@ -124,11 +118,16 @@ fn common_chars<'a, 'b>(lhs: &'a str, rhs: &'a str) -> String {
     return set_lhs.intersection(&set_rhs).cloned().collect();
 }
 
-fn day3a() {
+fn day3_process_data() -> Vec<&'static str> {
     const INPUT: &str = include_str!("../input/day3.txt");
+    return INPUT.split("\n").collect::<Vec<_>>();
+}
 
-    let bags: Vec<(&str, &str)> = INPUT
-        .split("\n")
+fn day3a() {
+    let contents = day3_process_data();
+
+    let bags: Vec<(&str, &str)> = contents
+        .iter()
         .map(|row| row.split_at(row.len() / 2))
         .collect::<Vec<_>>();
 
@@ -157,9 +156,7 @@ fn day3a() {
 }
 
 fn day3b() {
-    const INPUT: &str = include_str!("../input/day3.txt");
-
-    let bags = INPUT.split("\n").collect::<Vec<_>>();
+    let bags = day3_process_data();
     let triples = (&bags[..]).chunks_exact(3);
 
     let result = triples
@@ -187,9 +184,8 @@ struct Assignment {
     end: i32,
 }
 
-fn day4a() {
+fn day4_process_data() -> Vec<(Assignment, Assignment)> {
     const INPUT: &str = include_str!("../input/day4.txt");
-
     let assignment_pairs = INPUT
         .split("\n")
         .map(|line| {
@@ -215,6 +211,11 @@ fn day4a() {
             )
         })
         .collect::<Vec<_>>();
+    assignment_pairs
+}
+
+fn day4a() {
+    let assignment_pairs = day4_process_data();
 
     let result = assignment_pairs
         .iter()
@@ -228,33 +229,7 @@ fn day4a() {
 }
 
 fn day4b() {
-    const INPUT: &str = include_str!("../input/day4.txt");
-
-    let assignment_pairs = INPUT
-        .split("\n")
-        .map(|line| {
-            line.split(',')
-                .map(|assignment| {
-                    assignment
-                        .split('-')
-                        .map(|v| v.parse::<i32>().unwrap())
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        })
-        .map(|vv| {
-            (
-                Assignment {
-                    start: vv[0][0],
-                    end: vv[0][1],
-                },
-                Assignment {
-                    start: vv[1][0],
-                    end: vv[1][1],
-                },
-            )
-        })
-        .collect::<Vec<_>>();
+    let assignment_pairs = day4_process_data();
 
     let result = assignment_pairs
         .iter()
@@ -299,28 +274,27 @@ fn day5_process_data() -> (Vec<(usize, usize, usize)>, [Vec<char>; 9]) {
     let moves = moves
         .iter()
         .map(|move_str| {
-            re.captures(*move_str)
-                .map(|cap| {
-                    let count: usize = cap
-                        .name("count")
-                        .unwrap()
-                        .as_str()
-                        .parse()
-                        .expect("error parsing count");
-                    let from: usize = cap
-                        .name("from")
-                        .unwrap()
-                        .as_str()
-                        .parse()
-                        .expect("error parsing from");
-                    let to: usize = cap
-                        .name("to")
-                        .unwrap()
-                        .as_str()
-                        .parse()
-                        .expect("error parsing to");
-                    return (count, from, to);
-                })
+            re.captures(*move_str).map(|cap| {
+                let count: usize = cap
+                    .name("count")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("error parsing count");
+                let from: usize = cap
+                    .name("from")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("error parsing from");
+                let to: usize = cap
+                    .name("to")
+                    .unwrap()
+                    .as_str()
+                    .parse()
+                    .expect("error parsing to");
+                return (count, from, to);
+            })
         })
         .flatten()
         .collect::<Vec<_>>();
@@ -351,7 +325,9 @@ fn day5b() {
     let (moves, mut stacks) = day5_process_data();
 
     moves.iter().for_each(|(count, from, to)| {
-        let to_move: Vec<_> = stacks[*from - 1].drain(stacks[*from - 1].len() - *count..).collect();
+        let to_move: Vec<_> = stacks[*from - 1]
+            .drain(stacks[*from - 1].len() - *count..)
+            .collect();
         stacks[*to - 1].extend(to_move);
     });
 
