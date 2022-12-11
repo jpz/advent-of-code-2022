@@ -1,4 +1,6 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
+
+use regex::Regex;
 
 fn main() {
     day1a();
@@ -9,6 +11,8 @@ fn main() {
     day3b();
     day4a();
     day4b();
+    day5a();
+    day5b();
 }
 
 fn day1a() {
@@ -261,6 +265,101 @@ fn day4b() {
                 || ass2.start >= ass1.start && ass2.start <= ass1.end
         })
         .count();
+
+    println!("{}", result);
+}
+
+fn day5_process_data() -> (Vec<(usize, usize, usize)>, [Vec<char>; 9]) {
+    const INPUT: &str = include_str!("../input/day5.txt");
+    // decompose input file into initial crates section, and moves section
+    let mut it = INPUT
+        .split("\n\n")
+        .map(|chunk| chunk.split('\n').collect::<Vec<_>>());
+    let initial = it.next().unwrap();
+    let moves = it.next().unwrap();
+    // compute the index offsets using the last row of initial position
+    let indexes = initial[initial.len() - 1]
+        .chars()
+        .enumerate()
+        .filter(|(_pos, ch)| *ch != ' ')
+        .map(|(pos, ch)| (pos, ch as usize - '0' as usize))
+        .collect::<HashMap<_, _>>();
+    let mut stacks: [Vec<char>; 9] = Default::default();
+    // build the initial stack positions by stepping
+    initial[..initial.len() - 1].iter().rev().for_each(|row| {
+        indexes.iter().for_each(|(pos, stack)| {
+            let ch = row.chars().nth(*pos).unwrap();
+            if ch.is_alphabetic() {
+                stacks[stack - 1].push(ch);
+            }
+        })
+    });
+
+    let re = Regex::new(r"^move (?P<count>\d+) from (?P<from>\d+) to (?P<to>\d+)$").unwrap();
+    let moves = moves
+        .iter()
+        .map(|move_str| {
+            re.captures(*move_str)
+                .map(|cap| {
+                    let count: usize = cap
+                        .name("count")
+                        .unwrap()
+                        .as_str()
+                        .parse()
+                        .expect("error parsing count");
+                    let from: usize = cap
+                        .name("from")
+                        .unwrap()
+                        .as_str()
+                        .parse()
+                        .expect("error parsing from");
+                    let to: usize = cap
+                        .name("to")
+                        .unwrap()
+                        .as_str()
+                        .parse()
+                        .expect("error parsing to");
+                    return (count, from, to);
+                })
+        })
+        .flatten()
+        .collect::<Vec<_>>();
+
+    (moves, stacks)
+}
+
+fn day5a() {
+    let (moves, mut stacks) = day5_process_data();
+
+    moves.iter().for_each(|(count, from, to)| {
+        for _ in 0..*count {
+            let c = stacks[*from - 1].pop().unwrap();
+            stacks[*to - 1].push(c);
+        }
+    });
+
+    let result = stacks
+        .iter()
+        .map(|s| s.last())
+        .flatten()
+        .collect::<String>();
+
+    println!("{}", result);
+}
+
+fn day5b() {
+    let (moves, mut stacks) = day5_process_data();
+
+    moves.iter().for_each(|(count, from, to)| {
+        let to_move: Vec<_> = stacks[*from - 1].drain(stacks[*from - 1].len() - *count..).collect();
+        stacks[*to - 1].extend(to_move);
+    });
+
+    let result = stacks
+        .iter()
+        .map(|s| s.last())
+        .flatten()
+        .collect::<String>();
 
     println!("{}", result);
 }
